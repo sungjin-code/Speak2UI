@@ -23,3 +23,21 @@ data class TooltipMap(
     var description: String,
     var bounds: Rect
 ) : Parcelable
+
+data class TipCandidate(
+    val bounds: Rect,
+    val displayLabel: String,    // 내부 로그용(화면표시 텍스트)
+    val matchKey: String,        // 매칭용 키: actionable.contentDescription
+    val id: String,              // viewIdResourceName
+    val cls: String,             // className
+    val depth: Int               // DFS depth
+)
+
+// 레이아웃 변경 감지용 스냅샷(좌표 + matchKey)
+data class TipSnapshot(
+    val l: Int,
+    val t: Int,
+    val r: Int,
+    val b: Int,
+    val key: String
+)

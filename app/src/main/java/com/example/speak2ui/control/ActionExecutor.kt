@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Path
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
@@ -35,6 +36,7 @@ class ActionExecutor(
 ) {
 
     private val homePackage by lazy { resolveDefaultLauncherPackage() }
+    private val accessibility = Accessibility()
 
     companion object {
         private const val TAG = "ActionExecutor"
@@ -70,7 +72,7 @@ class ActionExecutor(
             } else {
                 val pressTarget = value[0]
                 // 1. Find by exact text match in clickable nodes
-                targetNode = clickableNodes.find { it.text == pressTarget }
+                targetNode = findNodeByLabel(value[0])
                 isLabeled = (targetNode != null)
 
                 // 2. Find by tooltip number
@@ -86,11 +88,37 @@ class ActionExecutor(
 
         when (intent) {
             "PRESS" -> {
-                val nodeToPress = if (isLabeled) targetNode else findNodeByTooltip(tooltip)
-                isCompleted = if (nodeToPress != null) {
-                    performPressAction(nodeToPress, tooltip?.bounds)
+                val ok = if (isLabeled) {
+                    val actionable = accessibility.resolveActionableAncestor(targetNode) ?: targetNode
+                    actionable?.let { node ->
+                        val cls = node.className?.toString().orEmpty()
+                        if (cls.endsWith("EditText")) {
+                            focusOrTapEditText(node, tooltip?.bounds)
+                        } else {
+                            if (node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) true
+                            else {
+                                val b = Rect().also { node.getBoundsInScreen(it) }
+                                tapRect(b)
+                            }
+                        }
+                    } == true
                 } else {
-                    tooltip?.bounds?.let { tapRect(it) } ?: false
+                    val desc = tooltip?.description?.trim()
+                    val node = clickableNodes.find { it.contentDescription?.toString()?.trim() == desc }
+                    when {
+                        node != null -> {
+                            val actionable = accessibility.resolveActionableAncestor(node) ?: node
+                            val cls = actionable.className?.toString().orEmpty()
+                            if (cls.endsWith("EditText")) focusOrTapEditText(actionable, tooltip?.bounds)
+                            else if (actionable.performAction(AccessibilityNodeInfo.ACTION_CLICK)) true
+                            else {
+                                val b = Rect().also { actionable.getBoundsInScreen(it) }
+                                tapRect(if (b.width() > 0 && b.height() > 0) b else (tooltip?.bounds ?: Rect()))
+                            }
+                        }
+                        tooltip?.bounds != null -> tapRect(tooltip.bounds)
+                        else -> false
+                    }
                 }
 
                 if (!isCompleted) {
@@ -99,20 +127,37 @@ class ActionExecutor(
             }
 
             "DOUBLE_PRESS" -> {
-                val nodeToPress = if (isLabeled) targetNode else findNodeByTooltip(tooltip)
-                val clickedFirst = nodeToPress?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                val clickedSecond = nodeToPress?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-
-                isCompleted = (clickedFirst == true) && (clickedSecond == true)
-                if (!isCompleted) message += "DOUBLE_PRESS labeled failed | "
+                if (isLabeled) {
+                    val actionable = accessibility.resolveActionableAncestor(targetNode) ?: targetNode
+                    val ok1 = actionable?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
+                    val ok2 = actionable?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
+                    isCompleted = ok1 && ok2
+                    if (!isCompleted) message += "DOUBLE_PRESS labeled failed | "
+                } else {
+                    val desc = tooltip?.description
+                    val node = clickableNodes.find { it.contentDescription?.toString()?.trim() == desc?.trim() }
+                    val actionable = accessibility.resolveActionableAncestor(node) ?: node
+                    val ok1 = actionable?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
+                    val ok2 = actionable?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
+                    isCompleted = ok1 && ok2
+                    if (!isCompleted) message += "DOUBLE_PRESS tooltip failed | "
+                }
             }
 
             "LONG_PRESS" -> {
-                val nodeToPress = if (isLabeled) targetNode else findNodeByTooltip(tooltip)
-                val longClicked =
-                    nodeToPress?.performAction(AccessibilityNodeInfo.ACTION_LONG_CLICK)
-                isCompleted = (longClicked == true)
-                if (!isCompleted) message += "LONG_PRESS labeled failed | "
+                if (isLabeled) {
+                    val actionable = accessibility.resolveActionableAncestor(targetNode) ?: targetNode
+                    val ok = actionable?.performAction(AccessibilityNodeInfo.ACTION_LONG_CLICK) == true
+                    isCompleted = ok
+                    if (!ok) message += "LONG_PRESS labeled failed | "
+                } else {
+                    val desc = tooltip?.description
+                    val node = clickableNodes.find { it.contentDescription?.toString()?.trim() == desc?.trim() }
+                    val actionable = accessibility.resolveActionableAncestor(node) ?: node
+                    val ok = actionable?.performAction(AccessibilityNodeInfo.ACTION_LONG_CLICK) == true
+                    isCompleted = ok
+                    if (!ok) message += "LONG_PRESS tooltip failed | "
+                }
             }
 
             "ENTER" -> {
@@ -155,6 +200,57 @@ class ActionExecutor(
 
         broadcastToStt(intent, isCompleted, message)
         return true
+    }
+
+    private fun findNodeByLabel(label: String): AccessibilityNodeInfo? {
+        if (label.isBlank()) return null
+        accessibility.refreshNodeCaches() // 항상 최신 스냅샷
+
+        val key = normalizeLabel(label)
+        val appPool = availableApps.toList()
+        val clickPool = clickableNodes.toList()
+
+        fun primary(n: AccessibilityNodeInfo) = normalizeLabel(accessibility.labelForActionable(n))
+        fun alt(n: AccessibilityNodeInfo)     = normalizeLabel(extractLabel(n))
+        fun idTok(n: AccessibilityNodeInfo) = normalizeLabel((n.viewIdResourceName ?: "").substringAfterLast("/"))
+
+        Log.d("STTProcessLog", "available_app count=${appPool.size}, labels=${appPool.map { accessibility.labelForActionable(it) }.filter { it.isNotBlank() }}")
+        Log.d("STTProcessLog", "clickable_nodes count=${clickPool.size}, labels=${clickPool.map { accessibility.labelForActionable(it) }.filter { it.isNotBlank() }}")
+
+        fun resolve(list: List<AccessibilityNodeInfo>): AccessibilityNodeInfo? {
+            list.firstOrNull { primary(it) == key }?.let { return it }
+            list.firstOrNull {
+                val c = primary(it); c.isNotBlank() && (c.contains(key) || key.contains(c))
+            }?.let { return it }
+            list.firstOrNull { alt(it) == key }?.let { return it }
+            list.firstOrNull {
+                val c = alt(it); c.isNotBlank() && (c.contains(key) || key.contains(c))
+            }?.let { return it }
+            list.firstOrNull {
+                val c = idTok(it); c.isNotBlank() && (c == key || c.contains(key) || key.contains(c))
+            }?.let { return it }
+            return null
+        }
+
+        return resolve(appPool) ?: resolve(clickPool).also {
+            if (it == null) Log.d("STTProcessLog", "findNodeByLabel: no match for '$label'")
+        }
+    }
+
+    // 라벨 정규화
+    private fun normalizeLabel(s: String): String =
+        s.lowercase().trim().replace("\\s+".toRegex(), " ")
+
+    private fun extractLabel(n: AccessibilityNodeInfo): String {
+        val t = n.text?.toString().orEmpty()
+        val d = n.contentDescription?.toString().orEmpty()
+        val h = if (Build.VERSION.SDK_INT >= 26) n.hintText?.toString().orEmpty() else ""
+        return when {
+            t.isNotBlank() -> t
+            d.isNotBlank() -> d
+            h.isNotBlank() -> h
+            else -> ""
+        }
     }
 
     private fun handleSwipeAction(cmd: ParsedCommand): Pair<Boolean, String> {
@@ -323,12 +419,12 @@ class ActionExecutor(
         return Pair(submitted, message)
     }
 
-    private fun findNodeByTooltip(tooltip: TooltipMap?): AccessibilityNodeInfo? {
-        if (tooltip == null) return null
-        return clickableNodes.find {
-            it.contentDescription?.toString()?.trim() == tooltip.description.trim()
-        }
-    }
+//    private fun findNodeByTooltip(tooltip: TooltipMap?): AccessibilityNodeInfo? {
+//        if (tooltip == null) return null
+//        return clickableNodes.find {
+//            it.contentDescription?.toString()?.trim() == tooltip.description.trim()
+//        }
+//    }
 
     /**
      * Performs a 'PRESS' action on the given node.

@@ -1,24 +1,28 @@
 package com.example.speak2ui.control
 
 import android.accessibilityservice.AccessibilityService
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.PixelFormat
 import android.graphics.Rect
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.MeasureSpec
 import android.view.WindowManager
-import android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-import android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.TextView
 import com.example.speak2ui.R
+import com.example.speak2ui.data.TipCandidate
+import com.example.speak2ui.data.TipSnapshot
 import com.example.speak2ui.data.TooltipMap
+import com.example.speak2ui.control.Accessibility
+import kotlin.math.abs
 
 /**
  * An [AccessibilityService] that automatically displays numbered tooltips (badges)
@@ -33,9 +37,17 @@ import com.example.speak2ui.data.TooltipMap
  */
 class TooltipService : AccessibilityService() {
 
+    private val accessibility = Accessibility()
+
     private lateinit var windowManager: WindowManager
     private val overlays = mutableMapOf<String, View>()
     private val tooltipMap = mutableListOf<TooltipMap>()
+
+    // 중복 방지 키(정확 동일)
+    private val seenTargets = mutableSetOf<String>()
+    // 원시 수집 후보(DFS에서 쌓고, 사후 정제)
+    private val candidates = mutableListOf<TipCandidate>()
+    private var lastSnapshot: List<TipSnapshot> = emptyList()
 
     // 200ms debounce
     private val handler = Handler(Looper.getMainLooper())
@@ -89,36 +101,60 @@ class TooltipService : AccessibilityService() {
     private fun updateTooltips() {
         val root = rootInActiveWindow ?: return
 
-        overlays.values.forEach { view ->
-            try {
-                windowManager.removeView(view)
-            } catch (_: IllegalArgumentException) { /* Ignore */
-            }
+        // 캐시 초기화 (오버레이/브로드캐스트는 '변화가 있을 때만' 갱신)
+        seenTargets.clear()
+        candidates.clear()
+
+        // DFS로 원시 후보 수집
+        dfs(root, depth = 0)
+
+        // ghost/겹침 정제
+        val finalTips = dedupeAndFilterTips(candidates)
+
+        // ====== 레이아웃 비교: 기존과 동일하면 갱신/브로드캐스트 전부 스킵 ======
+        val newSnapshot = makeSnapshot(finalTips)
+        if (isSameLayout(newSnapshot, lastSnapshot)) {
+            Log.d(TAG, "No tooltip layout change. Skipping update.")
+            return
         }
+
+        // 1) 기존 오버레이 제거
+        overlays.values.forEach { view ->
+            runCatching { windowManager.removeView(view) } }
         overlays.clear()
+
+        // 2) 브로드캐스트 데이터 재구성
         tooltipMap.clear()
+        finalTips.forEachIndexed { idx, c ->
+            val badge = makeBadgeView((idx + 1).toString())
+            positionOverlay(badge, c.bounds)
+            overlays["${idx + 1}"] = badge
 
-        dfs(root)
-        val toolMapList = ArrayList<TooltipMap>()
-        tooltipMap.forEach { toolMap ->
-            val badge = makeBadgeView(toolMap.number.toString())
-            positionOverlay(badge, toolMap.bounds)
-            overlays["${toolMap.number}"] = badge
-
-            toolMapList.add(
+            tooltipMap.add(
                 TooltipMap(
-                    number = toolMap.number,
-                    description = toolMap.description,
-                    bounds = toolMap.bounds
+                    number = idx + 1,
+                    description   = c.matchKey,   // MyAccessibilityService가 기대하는 key
+                    bounds = c.bounds
                 )
+            )
+
+            Log.d(
+                TAG,
+                "[TIP] #${idx + 1} id=${if (c.id.isEmpty()) "no-id" else c.id}, " +
+                        "cls=${c.cls}, matchKey='${c.matchKey}', display='${c.displayLabel}', bounds=${c.bounds}"
             )
         }
 
+        // 3) 브로드캐스트
         val broadcastIntent = Intent("com.example.TOOLTIP").apply {
             setPackage(packageName)
-            putParcelableArrayListExtra("tooltipMap", toolMapList)
+            putParcelableArrayListExtra("tooltipMap", ArrayList(tooltipMap))
         }
         sendBroadcast(broadcastIntent)
+        Log.d("TooltipService", "Tooltip Map broadcasted: count=${tooltipMap.size}")
+
+        // 4) 스냅샷 갱신
+        lastSnapshot = newSnapshot
     }
 
 
@@ -132,108 +168,167 @@ class TooltipService : AccessibilityService() {
      *
      * @param n The [AccessibilityNodeInfo] to start the traversal from.
      */
-    private fun dfs(n: AccessibilityNodeInfo) {
-        // Get the node's bounds and description.
-        val bounds = Rect().also { n.getBoundsInScreen(it) }
-        val desc = n.contentDescription?.toString().orEmpty()
+    private fun dfs(n: AccessibilityNodeInfo, depth: Int) {
+        val b = Rect().also { n.getBoundsInScreen(it) }
+        if (b.width() > 0 && b.height() > 0) {
+            val actionable = accessibility.resolveActionableAncestor(n)
+            if (actionable != null && actionable.isEnabled && actionable.isVisibleToUser) {
+                val key = accessibility.nodeKey(actionable)
 
-        // Extract a token from the view ID resource name to help identify its purpose.
-        val idTok = n.className?.toString()?.substringAfterLast("/")?.lowercase().orEmpty()
-        // Ignore nodes that are likely just for layout purposes.
-        val isNotLayoutId = !idTok.contains("Layout")
+                // 하위에 '보이는 text'가 하나라도 있으면 툴팁 배부 X (요구사항)
+                if (key !in seenTargets && !hasAnyVisibleText(actionable)) {
+                    seenTargets.add(key)
 
-        // Only consider nodes that have a physical presence on the screen.
-        if (bounds.width() > 0 && bounds.height() > 0) {
-            // --- Heuristics for identifying target nodes ---
-            val cls = n.className?.toString().orEmpty()
-            val hasVisibleText = n.text?.toString()?.trim()?.isNotEmpty() == true
-            // An "icon" is considered to be an ImageView, ImageButton, or a Button without any text.
-            val isIconClass =
-                cls.contains("ImageView") || cls.contains("ImageButton") ||
-                        (cls.endsWith("Button") && !hasVisibleText)  // A button with no text is treated as an icon.
-            val isEditText = cls.contains(".widget.EditText") || cls.endsWith("EditText")
-            val hintLow = n.hintText?.toString()?.lowercase().orEmpty()
-            // A node "looks like a search bar" if its ID, text, description, or hint contains search-related keywords.
-            val looksSearchKeyword = sequenceOf(
-                idTok,
-                n.text?.toString()?.lowercase().orEmpty(),
-                desc.lowercase(),
-                hintLow
-            ).any {
-                it.contains("검색") || it.contains("search") || it.contains("magnifier") || it.contains(
-                    "돋보기"
-                )
-            }
+                    val ab   = Rect().also { actionable.getBoundsInScreen(it) }
+                    val id   = actionable.viewIdResourceName ?: ""
+                    val cls  = actionable.className?.toString().orEmpty()
 
-            when {
-                // Condition 1: Add tooltip to clickable icons that don't have a visible text label.
-                (isNotLayoutId && isIconClass && n.isClickable && !hasVisibleText) -> {
-                    val label =
-                        desc.ifEmpty { "(icon)" } // Use content description or a generic label.
-                    tooltipMap.add(
-                        TooltipMap(
-                            number = tooltipMap.size + 1,
-                            description = label,
-                            bounds = bounds
+                    //매칭용 키: contentDescription (없으면 빈 문자열 → 좌표 탭 폴백)
+                    val matchKey = actionable.contentDescription?.toString()?.trim().orEmpty()
+                    val display = pickDisplayLabel(actionable) // text만, 없으면 "(tap)"
+
+                    candidates.add(
+                        TipCandidate(
+                            bounds = ab,
+                            displayLabel = display,
+                            matchKey = matchKey,
+                            id = id,
+                            cls = cls,
+                            depth = depth
                         )
                     )
-                    /*
-                    Log.d(
-                        TAG,
-                        "[ICON] " +
-                                "tooltip=${tooltipMap.size}, class=${n.className}, id=${n.viewIdResourceName ?: ""}, " +
-                                "text=${n.text ?: ""}, desc=${n.contentDescription ?: ""}, " +
-                                "clickable=${n.isClickable}, editable=${n.isEditable}, focusable=${n.isFocusable}, " +
-                                "enabled=${n.isEnabled}, labeledBy=${n.getLabeledBy()?.className ?: "null"}, " +
-                                "bounds=($bounds), hintText=${n.hintText}"
-                    )
-                    */
-                }
-
-                // Condition 2: Add tooltip to search bars (either EditTexts or nodes that look like search bars).
-                (isNotLayoutId && (isEditText || looksSearchKeyword)) -> {
-                    val label =
-                        if (desc.isNotEmpty()) desc
-                        else if (hintLow.isNotEmpty()) (n.hintText.toString())
-                        else "(search bar)" // Use description, hint text, or a generic label.
-
-                    tooltipMap.add(
-                        TooltipMap(
-                            number = tooltipMap.size + 1,
-                            description = label,
-                            bounds = bounds
-                        )
-                    )
-                    /*
-                    Log.d(
-                        TAG,
-                        "[SEARCH] " +
-                                "tooltip=${tooltipMap.size}, class=${n.className}, id=${n.viewIdResourceName ?: ""}, " +
-                                "text=${n.text ?: ""}, desc=${n.contentDescription ?: ""}, " +
-                                "clickable=${n.isClickable}, editable=${n.isEditable}, focusable=${n.isFocusable}, " +
-                                "enabled=${n.isEnabled}, labeledBy=${n.getLabeledBy()?.className ?: "null"}, " +
-                                "bounds=($bounds), hintText=${n.hintText}"
-                    )
-                    */
                 }
             }
-            /*
-            Log.d(
-                TAG,
-                "class=${n.className}, id=${n.viewIdResourceName ?: ""}, " +
-                        "text=${n.text ?: ""}, desc=${n.contentDescription ?: ""}, " +
-                        "clickable=${n.isClickable}, editable=${n.isEditable}, " +
-                        "labeledBy=${n.getLabeledBy()?.className ?: "null"}, " +
-                        "bounds=($bounds), hintText=${n.hintText}"
-            )
-            */
         }
-
-        // Recurse to all children of the current node.
         for (i in 0 until n.childCount) {
-            n.getChild(i)?.let { dfs(it) }
+            n.getChild(i)?.let { dfs(it, depth + 1) }
         }
     }
+
+    // ---------- 스냅샷/비교 ----------
+    private fun makeSnapshot(tips: List<TipCandidate>): List<TipSnapshot> {
+        return tips.map { c ->
+            TipSnapshot(
+                l = c.bounds.left,
+                t = c.bounds.top,
+                r = c.bounds.right,
+                b = c.bounds.bottom,
+                key = c.matchKey
+            )
+        }.sortedWith(compareBy<TipSnapshot> { it.t }.thenBy { it.l }.thenBy { it.r }.thenBy { it.b }.thenBy { it.key })
+    }
+
+    // 좌표 오차 tol 픽셀까지 동일로 간주
+    private fun isSameLayout(newSnaps: List<TipSnapshot>, oldSnaps: List<TipSnapshot>, tol: Int = 2): Boolean {
+        if (newSnaps.size != oldSnaps.size) return false
+        for (i in newSnaps.indices) {
+            val a = newSnaps[i]
+            val b = oldSnaps[i]
+            val sameKey = (a.key == b.key) || (a.key.isEmpty() && b.key.isEmpty())
+            val sameRect =
+                abs(a.l - b.l) <= tol &&
+                        abs(a.t - b.t) <= tol &&
+                        abs(a.r - b.r) <= tol &&
+                        abs(a.b - b.b) <= tol
+            if (!(sameKey && sameRect)) return false
+        }
+        return true
+    }
+
+    // 자기/자식에 "보이는 text"가 하나라도 있으면 true (desc/hint 무시)
+    private fun hasAnyVisibleText(n: AccessibilityNodeInfo): Boolean {
+        val q: ArrayDeque<AccessibilityNodeInfo> = ArrayDeque()
+        q.add(n)
+        var seen = 0
+        while (q.isNotEmpty() && seen < 64) {
+            val cur = q.removeFirst(); seen++
+            val t = cur.text?.toString()?.trim().orEmpty()
+            if (t.isNotEmpty()) {
+                val rb = Rect().also { cur.getBoundsInScreen(it) }
+                val onScreen = rb.width() > 0 && rb.height() > 0 && cur.isVisibleToUser
+                if (onScreen) return true
+            }
+            for (i in 0 until cur.childCount) cur.getChild(i)?.let { q.add(it) }
+        }
+        return false
+    }
+
+    // 표시에 적합한 문자열: text만 사용(없으면 "(tap)")
+    private fun pickDisplayLabel(n: AccessibilityNodeInfo): String {
+        val q: ArrayDeque<AccessibilityNodeInfo> = ArrayDeque()
+        q.add(n)
+        var cnt = 0
+        while (q.isNotEmpty() && cnt < 48) {
+            val cur = q.removeFirst(); cnt++
+            val t = cur.text?.toString()?.trim()
+            if (!t.isNullOrEmpty()) return t
+            for (i in 0 until cur.childCount) cur.getChild(i)?.let { q.add(it) }
+        }
+        return "(tap)"
+    }
+
+    // ---------- ghost/IoU 기반 정제 ----------
+    private fun dedupeAndFilterTips(src: List<TipCandidate>): List<TipCandidate> {
+        val banned = listOf(
+            "ghost", "skeleton", "scrim", "shimmer",
+            "placeholder", "guide", "guideline", "touch_delegate"
+        )
+        val filtered = src.filter { c ->
+            val id = c.id.lowercase()
+            val cl = c.cls.lowercase()
+            !banned.any { id.contains(it) || cl.contains(it) } &&
+                    c.bounds.width() > 0 && c.bounds.height() > 0
+        }
+
+        fun isIconish(c: TipCandidate) =
+            c.cls.endsWith("ImageButton") || c.cls.endsWith("ImageView")
+
+        fun score(c: TipCandidate): Int {
+            val area = c.bounds.width() * c.bounds.height()
+            var s = 0
+            if (isIconish(c)) s += 1000
+            if (c.id.isNotEmpty() && c.id != "no-id") s += 100
+            s += c.depth.coerceIn(0, 99)
+            s -= (area / 500) // 면적이 작을수록 유리
+            return s
+        }
+
+        val sorted = filtered.sortedByDescending { score(it) }
+
+        val kept = mutableListOf<TipCandidate>()
+        for (c in sorted) {
+            val overlap = kept.any { k ->
+                iou(k.bounds, c.bounds) > 0.60f ||
+                        containsApprox(k.bounds, c.bounds) ||
+                        containsApprox(c.bounds, k.bounds)
+            }
+            if (!overlap) kept.add(c)
+        }
+
+        Log.d(TAG, "dedupe: src=${src.size}, afterGhost=${filtered.size}, final=${kept.size}")
+        return kept
+    }
+
+    private fun iou(a: Rect, b: Rect): Float {
+        val left = maxOf(a.left, b.left)
+        val top = maxOf(a.top, b.top)
+        val right = minOf(a.right, b.right)
+        val bottom = minOf(a.bottom, b.bottom)
+        val iw = (right - left).coerceAtLeast(0)
+        val ih = (bottom - top).coerceAtLeast(0)
+        val inter = iw * ih
+        if (inter <= 0) return 0f
+        val union = a.width() * a.height() + b.width() * b.height() - inter
+        return if (union <= 0) 0f else inter.toFloat() / union.toFloat()
+    }
+
+    private fun containsApprox(outer: Rect, inner: Rect, tol: Int = 6): Boolean {
+        return inner.left   >= outer.left - tol &&
+                inner.top    >= outer.top  - tol &&
+                inner.right  <= outer.right + tol &&
+                inner.bottom <= outer.bottom + tol
+    }
+
 
     /**
      * Creates and inflates the tooltip badge view.
@@ -241,10 +336,10 @@ class TooltipService : AccessibilityService() {
      * @param label The text to display inside the badge (e.g., "1", "2").
      * @return The inflated [View] for the tooltip badge.
      */
+    @SuppressLint("InflateParams")
     private fun makeBadgeView(label: String): View {
-        val root = LayoutInflater.from(this)
-            .inflate(R.layout.tooltip_view, null, false)
-        val tv = root.findViewById<TextView>(R.id.tooltip)  // ← TextView id
+        val root = LayoutInflater.from(this).inflate(R.layout.tooltip_view, null, false)
+        val tv = root.findViewById<TextView>(R.id.tooltip)
         tv.text = label
         root.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
         return root
@@ -267,20 +362,23 @@ class TooltipService : AccessibilityService() {
         val screenW = metrics.widthPixels
         val screenH = metrics.heightPixels
 
-        val centerX = (bounds.left + bounds.right) / 2
-        val centerY = (bounds.top + bounds.bottom) / 2
+        val offsetX = (metrics.density).toInt()
+        val offsetY = (60f * metrics.density).toInt()
 
-        var x = centerX + (w / 2)
-        var y = centerY - h
+        val cx = (bounds.left + bounds.right) / 2
+        val cy = (bounds.top + bounds.bottom) / 2
+
+        var x = cx + offsetX - (w / 2)
+        var y = cy - offsetY - (h / 2)
 
         x = x.coerceIn(0, screenW - w)
         y = y.coerceIn(0, screenH - h)
 
-        val type = TYPE_ACCESSIBILITY_OVERLAY
+        val type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
 
         val params = WindowManager.LayoutParams(
             w, h, type,
-            FLAG_NOT_FOCUSABLE or FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START

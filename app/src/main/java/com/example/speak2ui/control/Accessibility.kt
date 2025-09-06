@@ -6,6 +6,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.res.Resources
+import android.graphics.Rect
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -26,6 +28,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.collections.set
 
 /**
  * The main accessibility service that listens for user commands and controls the screen.
@@ -135,18 +138,20 @@ class Accessibility : AccessibilityService() {
             clickableNodes.clear()
             availableApps.clear()
 
-            rootInActiveWindow?.let { root ->
-                screenReader.collectVisibleNodes(root, visibleNodes)
-            }
-            clickableNodes.addAll(visibleNodes.filter { it.isClickable })
+            refreshNodeCaches()
 
-            val activePackage = rootInActiveWindow?.packageName?.toString()
-            availableApps.addAll(
-                clickableNodes.filter { node ->
-                    val nodePackage = node.packageName?.toString()
-                    node.window?.type == AccessibilityWindowInfo.TYPE_APPLICATION && nodePackage == activePackage
-                }
-            )
+//            rootInActiveWindow?.let { root ->
+//                screenReader.collectVisibleNodes(root, visibleNodes)
+//            }
+//            clickableNodes.addAll(visibleNodes.filter { it.isClickable })
+//
+//            val activePackage = rootInActiveWindow?.packageName?.toString()
+//            availableApps.addAll(
+//                clickableNodes.filter { node ->
+//                    val nodePackage = node.packageName?.toString()
+//                    node.window?.type == AccessibilityWindowInfo.TYPE_APPLICATION && nodePackage == activePackage
+//                }
+//            )
 
             // 2. Parse the command using the screen context
             val allInteractiveNodes = getInteractiveNodes()
@@ -181,6 +186,59 @@ class Accessibility : AccessibilityService() {
         }
     }
 
+    fun refreshNodeCaches() {
+        visibleNodes.clear()
+        clickableNodes.clear()
+        availableApps.clear()
+
+        val root = rootInActiveWindow ?: return
+        screenReader.collectVisibleNodes(root, visibleNodes)
+
+        val activePkg = rootInActiveWindow?.packageName?.toString()
+        val dm = Resources.getSystem().displayMetrics
+        val screenRect = Rect(0, 0, dm.widthPixels, dm.heightPixels)
+        val seen = mutableSetOf<String>()
+
+        visibleNodes.forEach { v ->
+            val vb = Rect().also { v.getBoundsInScreen(it) }
+            val onScreen = Rect.intersects(screenRect, vb) && vb.width() > 0 && vb.height() > 0
+            if (!onScreen) return@forEach
+
+            // 자식(=텍스트 노드 등)에서 조상 클릭 타깃으로 승격
+            val actionable = if (v.isClickable) v else resolveActionableAncestor(v)
+            if (actionable == null /*|| !actionable.isEnabled*/) return@forEach // 필요 시 enabled만 체크
+
+            val key = nodeKey(actionable)
+            if (!seen.add(key)) return@forEach
+
+            val pkg = actionable.packageName?.toString()
+            val isApp = (actionable.window?.type == AccessibilityWindowInfo.TYPE_APPLICATION && pkg == activePkg)
+
+            if (isApp) availableApps.add(actionable) else clickableNodes.add(actionable)
+        }
+    }
+
+    // 노드 식별용 키
+    fun nodeKey(n: AccessibilityNodeInfo): String {
+        val b = Rect().also { n.getBoundsInScreen(it) }
+        val id = n.viewIdResourceName ?: "no-id"
+        val cls = n.className?.toString().orEmpty()
+        return "$id|$cls|${b.left},${b.top},${b.right},${b.bottom}"
+    }
+
+    fun resolveActionableAncestor(from: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
+        var cur = from ?: return null
+        var steps = 0
+        while (true) {
+            val hasClick = cur.isClickable || cur.actionList.any { it.id == AccessibilityNodeInfo.ACTION_CLICK }
+            if (hasClick /* && cur.isEnabled */) { // enabled만 체크(visibleToUser는 refresh에서 자식 bounds로 보장)
+                return cur
+            }
+            cur = cur.parent ?: return null
+            if (++steps > 20) return null
+        }
+    }
+
     /**
      * Aggregates all available clickable elements into a single list of [InteractiveNode]s.
      *
@@ -193,23 +251,78 @@ class Accessibility : AccessibilityService() {
     private fun getInteractiveNodes(): List<InteractiveNode> {
         val allInteractiveNodes = mutableListOf<InteractiveNode>()
 
-        val availableList = availableApps.mapNotNull { it.text?.toString()?.trim() }
-            .filter { it.isNotEmpty() }
+        val availableList = availableApps
+            .mapNotNull { labelForActionable(it).trim().takeIf { t -> t.isNotEmpty() } }
+            .distinctBy { normalizeLabel(it) }
             .map { InteractiveNode(it, true) }
         allInteractiveNodes.addAll(availableList)
 
-        val clickableList = clickableNodes.mapNotNull { it.text?.toString()?.trim() }
-            .filter { it.isNotEmpty() }
+        val clickableList = clickableNodes
+            .mapNotNull { labelForActionable(it).trim().takeIf { t -> t.isNotEmpty() } }
+            .distinctBy { normalizeLabel(it) }
             .map { InteractiveNode(it, false) }
         allInteractiveNodes.addAll(clickableList)
 
-        val tooltipList = tooltipMap.map { it.number.toString() }
-            .filter { it.isNotEmpty() }
+        val tooltipList = tooltipMap
+            .mapNotNull { it.number?.toString()?.trim()?.takeIf { t -> t.isNotEmpty() } }
+            .distinct()
             .map { InteractiveNode(it, false) }
         allInteractiveNodes.addAll(tooltipList)
 
         return allInteractiveNodes
     }
+
+    // 액션 가능한 노드에 라벨 부여: 본인 라벨 없으면 자식(최대 depth 3)에서 찾아옴
+    // actionable 자신에 text/desc/hint 없으면 자식들에서 제목/설명 텍스트를 끌어온다.
+    fun labelForActionable(n: AccessibilityNodeInfo): String {
+        fun selfLabel(): String {
+            val t = n.text?.toString().orEmpty()
+            val d = n.contentDescription?.toString().orEmpty()
+            val h = if (Build.VERSION.SDK_INT >= 26) n.hintText?.toString().orEmpty() else ""
+            return when {
+                t.isNotBlank() -> t
+                d.isNotBlank() -> d
+                h.isNotBlank() -> h
+                else -> ""
+            }
+        }
+
+        val self = selfLabel()
+        if (self.isNotBlank()) return self
+
+        // 제목/채널명 같은 자식 텍스트를 BFS로 검색 (최대 48개 노드)
+        val q = ArrayDeque<AccessibilityNodeInfo>()
+        q.add(n)
+        var visited = 0
+        var fallback = "" // 첫 번째 발견 텍스트(없으면 빈 문자열)
+
+        while (q.isNotEmpty() && visited < 48) {
+            val cur = q.removeFirst()
+            visited++
+
+            val t = cur.text?.toString()?.trim().orEmpty()
+            val d = cur.contentDescription?.toString()?.trim().orEmpty()
+            if (t.isNotBlank() || d.isNotBlank()) {
+                val lbl = if (t.isNotBlank()) t else d
+                val idName = (cur.viewIdResourceName ?: "").substringAfterLast("/")
+                // 우선순위: title, channel/author 같은 필드명을 가급적 먼저 사용
+                if (idName.contains("title", ignoreCase = true) ||
+                    idName.contains("author", ignoreCase = true) ||
+                    idName.contains("channel", ignoreCase = true)
+                ) {
+                    return lbl
+                }
+                if (fallback.isBlank()) fallback = lbl
+            }
+            for (i in 0 until cur.childCount) {
+                cur.getChild(i)?.let { q.add(it) }
+            }
+        }
+        return fallback // 있으면 반환, 없으면 빈 문자열
+    }
+
+    fun normalizeLabel(s: String): String =
+        s.lowercase().trim().replace("\\s+".toRegex(), " ")
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) = Unit
     override fun onInterrupt() = Unit

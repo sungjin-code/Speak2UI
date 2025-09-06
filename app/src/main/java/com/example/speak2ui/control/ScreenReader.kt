@@ -2,6 +2,7 @@ package com.example.speak2ui.control
 
 import android.content.res.Resources
 import android.graphics.Rect
+import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
 
 /**
@@ -28,23 +29,29 @@ class ScreenReader {
         node: AccessibilityNodeInfo,
         visibleList: MutableList<AccessibilityNodeInfo>
     ) {
-        if (node.isVisibleToUser) {
-            visibleList.add(node)
-        } else {
-            // Fallback check for nodes that are not technically "visible" but are on screen.
-            val bounds = Rect()
-            node.getBoundsInScreen(bounds)
-            val displayMetrics = Resources.getSystem().displayMetrics
-            val screenRect = Rect(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
-            if (Rect.intersects(screenRect, bounds)) {
-                visibleList.add(node)
+        val dm = Resources.getSystem().displayMetrics
+        val screenRect = Rect(0, 0, dm.widthPixels, dm.heightPixels)
+
+        fun dfs(n: AccessibilityNodeInfo) {
+            val b = Rect()
+            n.getBoundsInScreen(b)
+            val isOnScreen = Rect.intersects(screenRect, b) && b.width() > 0 && b.height() > 0
+
+            if (n.isVisibleToUser || isOnScreen) {
+                visibleList.add(n)
+//                Log.d(
+//                    "visibleNode",
+//                    "class=${n.className}, id=${n.viewIdResourceName ?: "no-id"}, " +
+//                            "text=${n.text ?: ""}, desc=${n.contentDescription ?: ""}, " +
+//                            "clickable=${n.isClickable}, editable=${n.isEditable}, focusable=${n.isFocusable}, " +
+//                            "enabled=${n.isEnabled}, labeledBy=${n.labeledBy?.className ?: "null"}, " +
+//                            "hintText=${n.hintText}"
+//                )
+            }
+            for (i in 0 until n.childCount) {
+                n.getChild(i)?.let { dfs(it) }
             }
         }
-        // Recurse through all children.
-        for (i in 0 until node.childCount) {
-            node.getChild(i)?.let { child ->
-                collectVisibleNodes(child, visibleList)
-            }
-        }
+        dfs(node)
     }
 }
