@@ -60,8 +60,18 @@ class Accessibility : AccessibilityService() {
         private const val TAG = "ActionExecutor"
     }
 
+    private lateinit var myPkg: String
+    private lateinit var denyPkgs: Set<String>
     override fun onCreate() {
         super.onCreate()
+        myPkg = packageName
+        denyPkgs = setOf(
+            myPkg,
+            "com.android.systemui",
+            "com.google.android.googlequicksearchbox",
+            "com.samsung.android.app.launcher",
+            "com.android.launcher"
+        )
         commandParser = CommandParser()
     }
 
@@ -139,19 +149,6 @@ class Accessibility : AccessibilityService() {
             availableApps.clear()
 
             refreshNodeCaches()
-
-//            rootInActiveWindow?.let { root ->
-//                screenReader.collectVisibleNodes(root, visibleNodes)
-//            }
-//            clickableNodes.addAll(visibleNodes.filter { it.isClickable })
-//
-//            val activePackage = rootInActiveWindow?.packageName?.toString()
-//            availableApps.addAll(
-//                clickableNodes.filter { node ->
-//                    val nodePackage = node.packageName?.toString()
-//                    node.window?.type == AccessibilityWindowInfo.TYPE_APPLICATION && nodePackage == activePackage
-//                }
-//            )
 
             // 2. Parse the command using the screen context
             val allInteractiveNodes = getInteractiveNodes()

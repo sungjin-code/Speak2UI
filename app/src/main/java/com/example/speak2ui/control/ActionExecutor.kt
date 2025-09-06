@@ -71,17 +71,16 @@ class ActionExecutor(
                 Log.e(TAG, "PRESS received without target values")
             } else {
                 val pressTarget = value[0]
-                // 1. Find by exact text match in clickable nodes
-                targetNode = findNodeByLabel(value[0])
-                isLabeled = (targetNode != null)
-
-                // 2. Find by tooltip number
+                // 숫자 우선
                 val tooltipNumber = pressTarget.takeWhile { it.isDigit() }
                 if (tooltipNumber.isNotEmpty()) {
                     tooltip = tooltipMap.find { it.number == tooltipNumber.toInt() }
-                    if (tooltip == null) {
-                        Log.e(TAG, "No tooltip ($pressTarget) executable")
-                    }
+                    if (tooltip == null) Log.e(TAG, "No tooltip ($pressTarget) executable")
+                }
+                // 라벨 매칭은 그다음
+                if (tooltip == null) {
+                    targetNode = findNodeByLabel(pressTarget)
+                    isLabeled = (targetNode != null)
                 }
             }
         }
@@ -95,11 +94,8 @@ class ActionExecutor(
                         if (cls.endsWith("EditText")) {
                             focusOrTapEditText(node, tooltip?.bounds)
                         } else {
-                            if (node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) true
-                            else {
-                                val b = Rect().also { node.getBoundsInScreen(it) }
-                                tapRect(b)
-                            }
+                            node.performAction(AccessibilityNodeInfo.ACTION_CLICK) ||
+                                    Rect().apply { node.getBoundsInScreen(this) }.let { tapRect(it) }
                         }
                     } == true
                 } else {
@@ -110,20 +106,16 @@ class ActionExecutor(
                             val actionable = accessibility.resolveActionableAncestor(node) ?: node
                             val cls = actionable.className?.toString().orEmpty()
                             if (cls.endsWith("EditText")) focusOrTapEditText(actionable, tooltip?.bounds)
-                            else if (actionable.performAction(AccessibilityNodeInfo.ACTION_CLICK)) true
-                            else {
-                                val b = Rect().also { actionable.getBoundsInScreen(it) }
-                                tapRect(if (b.width() > 0 && b.height() > 0) b else (tooltip?.bounds ?: Rect()))
-                            }
+                            else actionable.performAction(AccessibilityNodeInfo.ACTION_CLICK) ||
+                                    Rect().apply { actionable.getBoundsInScreen(this) }
+                                        .let { r -> tapRect(if (r.width() > 0 && r.height() > 0) r else (tooltip?.bounds ?: Rect())) }
                         }
                         tooltip?.bounds != null -> tapRect(tooltip.bounds)
                         else -> false
                     }
                 }
-
-                if (!isCompleted) {
-                    message += "PRESS click/tap failed | "
-                }
+                isCompleted = ok                      // 🔑
+                if (!ok) message += "PRESS click/tap failed | "
             }
 
             "DOUBLE_PRESS" -> {

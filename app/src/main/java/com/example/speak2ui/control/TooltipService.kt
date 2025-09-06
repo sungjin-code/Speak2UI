@@ -151,7 +151,7 @@ class TooltipService : AccessibilityService() {
             putParcelableArrayListExtra("tooltipMap", ArrayList(tooltipMap))
         }
         sendBroadcast(broadcastIntent)
-        Log.d("TooltipService", "Tooltip Map broadcasted: count=${tooltipMap.size}")
+        Log.d(TAG, "Tooltip Map broadcasted: count=${tooltipMap.size}")
 
         // 4) 스냅샷 갱신
         lastSnapshot = newSnapshot
