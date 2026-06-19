@@ -1,0 +1,102 @@
+﻿ID,intent,value,time
+1,OPEN,"['component:mobile_network', 'app:play_store']",0.30965881794691086
+2,OPEN,"['component:mobile_network', 'app:settings']",0.28937356173992157
+3,OPEN,"['component:mobile_network', 'app:whatsapp']",0.30028006434440613
+4,OPEN,"['component:mobile_network', 'app:settings']",0.2830111011862755
+5,PRESS,['smiley_face'],0.22560139000415802
+6,PRESS,['mini_keyboard_icon'],0.24365942925214767
+7,PRESS,['emoji'],0.1989201307296753
+8,PRESS,['send_icon'],0.2167816087603569
+9,OPEN,"['component:mobile_network', 'app:play_store']",0.2991844713687897
+10,NONE,['NONE'],0.20740825682878494
+11,OPEN,"['fitbit', 'app:fitbit']",0.27104008942842484
+12,OPEN,"['component:mobile_network', 'app:tasker']",0.2925513833761215
+13,OPEN,"['component:incognito', 'app:settings']",0.2887797951698303
+14,OPEN,"['component:mobile_network', 'app:tasker']",0.2901984751224518
+15,PRESS,['account_icon'],0.21821001172065735
+16,OPEN,"['wallet', 'settings']",0.23596541583538055
+17,ENTER,['4자리 우편번호'],0.3629370257258415
+18,OPEN,"['component:incognito', 'app:settings']",0.2891829013824463
+19,OPEN,"['component:incognito', 'app:settings']",0.29067688435316086
+20,OPEN,"['app:play_store', 'app:tasker']",0.2946649417281151
+21,OPEN,"['ebay', 'play_store']",0.26337721198797226
+22,OPEN,"['component:settings', 'app:settings']",0.27096981555223465
+23,SWIPE,['RIGHT'],0.19844617694616318
+24,OPEN,"['component:incognito', 'app:settings']",0.28788597881793976
+25,OPEN,"['component:mobile_network', 'app:tasker']",0.2914295122027397
+26,OPEN,"['profile', 'settings']",0.23485732078552246
+27,PRESS,['plus_symbol'],0.21671584993600845
+28,OPEN,"['component:mobile_network', 'app:telegram']",0.30367543548345566
+29,OPEN,"['component:mobile_network', 'app:email']",0.2931625321507454
+30,ENTER,['라고 입력해'],0.318535178899765
+31,OPEN,"['component:settings', 'app:settings']",0.26663871109485626
+32,OPEN,"['component:mobile_network', 'app:settings']",0.2911025285720825
+33,OPEN,"['component:mobile_network', 'app:settings']",0.2908049523830414
+34,OPEN,"['component:incognito', 'app:play_store']",0.304316021502018
+35,SWIPE,['RIGHT'],0.20644626766443253
+36,NONE,['NONE'],0.2087152674794197
+37,OPEN,"['component:calendar', 'app:calendar']",0.268666610121727
+38,OPEN,"['component:mobile_network', 'app:settings']",0.29050934314727783
+39,ENTER,"['제목, 날짜, 시간 및 세부 정보 입력해']",0.5862926170229912
+40,OPEN,"['component:incognito', 'app:settings']",0.28321249037981033
+41,PRESS,['dolphin_icon'],0.23602472990751266
+42,OPEN,"['component:incognito', 'app:settings']",0.2913929969072342
+43,OPEN,"['component:mobile_network', 'app:settings']",0.2880612760782242
+44,NONE,['선택한 데이터 지우기 탭해'],0.46133052557706833
+45,OPEN,"['component:digital_well_being', 'app:settings']",0.298700250685215
+46,OPEN,"['component:incognito', 'app:google_maps']",0.29933544993400574
+47,OPEN,"['app:play_store', 'component:play_store']",0.3089446499943733
+48,OPEN,"['component:my_apps_&_games', 'app:game']",0.32579757273197174
+49,OPEN,"['component:mobile_network', 'app:settings']",0.28838177770376205
+50,SWIPE,['RIGHT'],0.2073643058538437
+51,OPEN,"['component:gallery', 'app:gallery']",0.2815546914935112
+52,OPEN,"['component:album', 'app:music']",0.2792203798890114
+53,OPEN,"['component:mobile_network', 'app:settings']",0.2836379334330559
+54,OPEN,"['app:play_store', 'component:mobile_network']",0.3093796670436859
+55,PRESS,['menu'],0.19873037934303284
+56,OPEN,"['component:mobile_network', 'app:tasker']",0.29970476031303406
+57,OPEN,"['component:mobile_network', 'app:tasker']",0.3011588826775551
+58,OPEN,"['component:mobile_network', 'app:settings']",0.28039810061454773
+59,NONE,['NONE'],0.20908643305301666
+60,OPEN,"['network_operators', 'settings']",0.2625940218567848
+61,OPEN,"['component:incognito', 'app:google_maps']",0.3062680512666702
+62,SWIPE,['RIGHT'],0.19700488448143005
+63,OPEN,"['app:google_maps', 'component:mobile_network']",0.2982201874256134
+64,OPEN,"['component:mobile_network', 'app:settings']",0.2888826057314873
+65,OPEN,"['settings', 'app:settings']",0.2548106461763382
+66,OPEN,"['component:mobile_network', 'app:settings']",0.29321523755788803
+67,NONE,"['마지막으로, 음성 크기 눌러.']",0.5120454579591751
+68,SWIPE,['RIGHT'],0.20835264772176743
+69,NONE,['NONE'],0.21736063063144684
+70,OPEN,"['settings', 'app:settings']",0.2539049983024597
+71,OPEN,"['component:mobile_network', 'app:settings']",0.290911041200161
+72,OPEN,"['component:incognito', 'app:settings']",0.2903963029384613
+73,OPEN,"['component:mobile_network', 'app:settings']",0.28942541033029556
+74,OPEN,"['component:incognito', 'app:play_store']",0.3773585334420204
+75,OPEN,"['component:mobile_network', 'app:settings']",0.31853337585926056
+76,OPEN,"['component:incognito', 'app:settings']",0.28532592952251434
+77,ENTER,['PIN 입력해'],0.2696118503808975
+78,OPEN,"['component:settings', 'app:settings']",0.2713419273495674
+79,OPEN,"['component:mobile_network', 'app:settings']",0.29051288962364197
+80,OPEN,"['component:incognito', 'app:settings']",0.33582451194524765
+81,SWIPE,['RIGHT'],0.24931718409061432
+82,OPEN,"['chrome', 'settings']",0.2333320826292038
+83,OPEN,"['component:incognito', 'app:settings']",0.28705691546201706
+84,OPEN,"['component:settings', 'app:settings']",0.26972614973783493
+85,OPEN,"['component:mobile_network', 'app:settings']",0.28729329258203506
+86,OPEN,"['component:mobile_network', 'app:settings']",0.2884659618139267
+87,OPEN,"['component:incognito', 'app:settings']",0.2887401282787323
+88,NONE,[],0.1814921423792839
+89,OPEN,"['component:mobile_network', 'app:settings']",0.2881223037838936
+90,OPEN,"['component:mobile_network', 'app:settings']",0.29104892164468765
+91,OPEN,"['bluetooth', 'chromebook']",0.2655480206012726
+92,OPEN,"['component:settings', 'app:settings']",0.28854217380285263
+93,OPEN,"['component:mobile_network', 'app:twitter']",0.2861580103635788
+94,OPEN,"['component:mobile_network', 'app:settings']",0.2900429964065552
+95,PRESS,['authentication_app'],0.22707143425941467
+96,OPEN,"['component:mobile_network', 'app:linkedin']",0.2990569844841957
+97,OPEN,"['component:mobile_network', 'app:settings']",0.2902635261416435
+98,OPEN,"['component:incognito', 'app:two-factor-authentication']",0.33269011229276657
+99,OPEN,"['instagram', 'app:instagram']",0.2621608078479767
+100,OPEN,"['settings', 'app:settings']",0.2513018622994423
+101,OPEN,"['component:incognito', 'app:settings']",0.2874585911631584

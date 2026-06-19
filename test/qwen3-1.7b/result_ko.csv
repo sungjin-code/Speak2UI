@@ -1,0 +1,102 @@
+﻿ID,intent,value,time
+1,OPEN,"['component:play_store', 'app:play_store']",0.3428860902786255
+2,PRESS,['account'],0.20918221771717072
+3,OPEN,"['component:whatsapp', 'app:whatsapp']",0.34918898344039917
+4,NONE,[],0.1948321908712387
+5,PRESS,['smiley_face'],0.24318134784698486
+6,PRESS,['mini_keyboard_icon'],0.23884974420070648
+7,PRESS,['emoji'],0.20949424803256989
+8,PRESS,['send_icon'],0.22374974936246872
+9,OPEN,"['component:office_lens', 'app:office_lens']",0.34632475674152374
+10,SWIPE,['RIGHT'],0.2385733425617218
+11,OPEN,"['component:facebook_messenger', 'app:facebook_messenger']",0.37522003799676895
+12,PRESS,['conversation'],0.21027244627475739
+13,PRESS,['i_menu'],0.22457467019557953
+14,OPEN,"['component:fitbit', 'app:fitbit']",0.346487395465374
+15,PRESS,['account_icon'],0.22617440670728683
+16,PRESS,['wallet'],0.20843368023633957
+17,NONE,[],0.19155814498662949
+18,PRESS,['privacy'],0.2095537930727005
+19,NONE,[],0.19208218902349472
+20,OPEN,"['component:opera', 'app:opera']",0.34639208763837814
+21,PRESS,['opera_logo'],0.2395028993487358
+22,PRESS,['settings'],0.20952783524990082
+23,SWIPE,['DOWN'],0.2378470003604889
+24,PRESS,['clear_browsing_data'],0.2538154721260071
+25,OPEN,"['component:tasker', 'app:tasker']",0.34613530337810516
+26,PRESS,['profiles'],0.20944534242153168
+27,PRESS,['plus_symbol'],0.2255767360329628
+28,PRESS,['phone'],0.20765119791030884
+29,PRESS,['compose_sms'],0.2264760360121727
+30,ENTER,['수신자'],0.23451482504606247
+31,OPEN,['app:settings'],0.23424403369426727
+32,PRESS,['battery'],0.20753022283315659
+33,PRESS,['adaptive_battery'],0.22095777094364166
+34,PRESS,['open'],0.2108033448457718
+35,PRESS,['double-horizontal_ellipsis_icon'],0.2687148377299309
+36,SWIPE,['RIGHT'],0.23994246870279312
+37,OPEN,"['component:calendar', 'app:calendar']",0.3173486068844795
+38,PRESS,['plus_sign'],0.2220752313733101
+39,NONE,[],0.19446943700313568
+40,PRESS,['save'],0.2099185585975647
+41,PRESS,['dolphin_icon'],0.25500934571027756
+42,PRESS,['clear_data'],0.22777360677719116
+43,PRESS,['browsing_history'],0.2388933002948761
+44,PRESS,['clear_selected_data'],0.23878472298383713
+45,OPEN,"['component:digital_well_being', 'app:fitbit']",0.38992711901664734
+46,OPEN,"['component:tasker', 'app:tasker']",0.3452374339103699
+47,OPEN,['app:play_store'],0.2533198520541191
+48,PRESS,['my_apps_&_games'],0.2718241736292839
+49,PRESS,['installed'],0.20945733785629272
+50,PRESS,['uninstall'],0.22659575194120407
+51,OPEN,"['component:gallery', 'app:gallery']",0.31591830402612686
+52,PRESS,['album'],0.2130524143576622
+53,PRESS,['yes'],0.20767447352409363
+54,OPEN,"['component:google_music_app', 'app:play_store']",0.361644946038723
+55,PRESS,['menu'],0.20683663338422775
+56,PRESS,['podcasts'],0.22574295848608017
+57,PRESS,['your_podcast'],0.2399999052286148
+58,PRESS,['manage_subscription'],0.22248201072216034
+59,SWIPE,['RIGHT'],0.2503259927034378
+60,PRESS,['network_operators'],0.23567014932632446
+61,PRESS,['search_now'],0.22609363496303558
+62,NONE,[],0.19154374301433563
+63,OPEN,"['component:google_maps', 'app:google_maps']",0.34427182376384735
+64,PRESS,['search_here'],0.22358926385641098
+65,PRESS,['settings'],0.20934075862169266
+66,PRESS,['navigation_settings'],0.22570303082466125
+67,PRESS,['voice_level'],0.22557667642831802
+68,PRESS,['softer'],0.22320399433374405
+69,PRESS,['language'],0.2105908766388893
+70,PRESS,['settings'],0.2093118503689766
+71,PRESS,['mobile_networks'],0.2411811277270317
+72,PRESS,['access_point_names'],0.23854511976242065
+73,PRESS,['mobile_networks'],0.2404070794582367
+74,PRESS,['more_icon'],0.22143445909023285
+75,PRESS,['new_apn'],0.23612237721681595
+76,PRESS,['three-dot_menu_icon'],0.25699005275964737
+77,NONE,[],0.19307059794664383
+78,PRESS,['settings'],0.2112036943435669
+79,PRESS,['component:mobile_network'],0.25316374748945236
+80,PRESS,['privacy'],0.21276133507490158
+81,SWIPE,['LEFT'],0.2387700080871582
+82,OPEN,"['component:incognito', 'app:chrome']",0.3315470516681671
+83,PRESS,['clear_browsing_data'],0.2558911666274071
+84,PRESS,['settings'],0.2090701162815094
+85,PRESS,['clear_private_data'],0.2400154396891594
+86,PRESS,['open_tabs'],0.2236708626151085
+87,PRESS,['open_tabs'],0.22601880133152008
+88,NONE,[],0.19230148196220398
+89,OPEN,"['component:mobile_network', 'app:settings']",0.33019280433654785
+90,PRESS,['connected_devices'],0.2217104211449623
+91,PRESS,['bluetooth'],0.22173959761857986
+92,PRESS,['settings'],0.21167119592428207
+93,OPEN,"['component:twitter', 'app:twitter']",0.316358745098114
+94,PRESS,['more'],0.2100778892636299
+95,PRESS,['authentication_app'],0.22744326293468475
+96,OPEN,"['component:mobile_network', 'app:linkedin']",0.32810700684785843
+97,PRESS,['sign_in_and_security'],0.2556699141860008
+98,PRESS,['two-factor_authentication'],0.23711461573839188
+99,OPEN,"['component:instagram', 'app:instagram']",0.3160795792937279
+100,PRESS,['settings'],0.20946389436721802
+101,PRESS,['security'],0.21146106719970703

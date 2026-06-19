@@ -11,3 +11,4 @@
 .externalNativeBuild
 .cxx
 .env
+__pycache__

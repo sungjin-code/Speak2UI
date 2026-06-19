@@ -4,23 +4,44 @@ import re
 
 import torch
 from dotenv import load_dotenv
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from huggingface_hub import snapshot_download
+from transformers import (
+    AutoModelForCausalLM,
+    AutoModelForImageTextToText,
+    AutoTokenizer,
+)
 
 from common import system_prompt, get_prompt, run_inference, evaluate
 
-# NOTE: `meta-llama/Llama-3.1-8B-Instruct` is a gated model on HuggingFace.
-# Accept the license on the model page, then put your token in a `.env` file as:
+# NOTE: Some models are gated on HuggingFace (e.g. Llama-3.1/3.2, Gemma-3n).
+# Accept the license on each model page, then put your token in a `.env` file:
 #   HF_TOKEN=hf_xxx
 # `transformers` reads HF_TOKEN automatically once load_dotenv() loads it.
 load_dotenv()
 
 
-def load_model(hf_id: str):
-    tokenizer = AutoTokenizer.from_pretrained(hf_id)
-    model = AutoModelForCausalLM.from_pretrained(
-        hf_id,
-        torch_dtype=torch.bfloat16,
+def download_model(hf_id: str) -> str:
+    """Ensure model weights are available locally.
+
+    `snapshot_download` reuses already-downloaded files from the HuggingFace
+    cache and fetches only what is missing, then returns the local path.
+    """
+    print(f"Downloading / locating weights for {hf_id}...")
+    return snapshot_download(repo_id=hf_id)
+
+
+def load_model(local_path: str, key: str):
+    tokenizer = AutoTokenizer.from_pretrained(local_path, local_files_only=True)
+    # Gemma 3n is multimodal and needs the image-text-to-text class even for
+    # text-only generation; the others are plain causal LMs.
+    model_cls = (
+        AutoModelForImageTextToText if "gemma-3n" in key else AutoModelForCausalLM
+    )
+    model = model_cls.from_pretrained(
+        local_path,
+        dtype=torch.bfloat16,
         device_map="cuda",
+        local_files_only=True,
     )
     model.eval()
     return model, tokenizer
@@ -92,8 +113,14 @@ def parse_command(
 
 if __name__ == "__main__":
     models = {
+        "qwen3-1.7b": "Qwen/Qwen3-1.7B",
+        "qwen3-4b": "Qwen/Qwen3-4B",
         "qwen3-8b": "Qwen/Qwen3-8B",
         "llama-3.1-8b": "meta-llama/Llama-3.1-8B-Instruct",
+        "llama-3.2-3b": "meta-llama/Llama-3.2-3B-Instruct",
+        "llama-3.2-1b": "meta-llama/Llama-3.2-1B-Instruct",
+        "smollm2-1.7b": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+        "gemma-3n-e2b": "google/gemma-3n-E2B-it",
     }
 
     # (dirname, lang, encoding, suffix)
@@ -104,10 +131,34 @@ if __name__ == "__main__":
         ("eval_hard", "ko", "utf-8-sig", "_hard"),
     ]
 
+    def is_done(key):
+        # A model is complete when every dataset's result JSON already exists.
+        return all(
+            os.path.exists(f"{key}/result{suffix}_{lang}.json")
+            for _, lang, _, suffix in datasets
+        )
+
+    # Skip models that already have complete local results.
+    pending = {}
     for key, hf_id in models.items():
-        print(f"\n===== Loading {key} ({hf_id}) =====")
+        if is_done(key):
+            print(f"Skipping {key}: results already exist.")
+        else:
+            pending[key] = hf_id
+
+    # Download all weights first (reusing local cache), then run experiments.
+    # Models that fail to download are logged and skipped.
+    local_paths = {}
+    for key, hf_id in pending.items():
+        try:
+            local_paths[key] = download_model(hf_id)
+        except Exception as e:
+            print(f"[WARN] Skipping {key}: download failed ({hf_id}): {e}")
+
+    for key, local_path in local_paths.items():
+        print(f"\n===== Loading {key} =====")
         os.makedirs(key, exist_ok=True)
-        model, tokenizer = load_model(hf_id)
+        model, tokenizer = load_model(local_path, key)
         is_qwen = "qwen" in key
 
         for d, lang, enc, suffix in datasets:

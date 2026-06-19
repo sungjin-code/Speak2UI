@@ -1,0 +1,88 @@
+﻿ID,intent,value,time
+1,PRESS,['대화 두 번 클릭해'],0.4112652763724327
+2,PRESS,['chat'],0.33422280848026276
+3,OPEN,"['chat', 'facebook_messenger']",0.4333026111125946
+4,PRESS,['대화 길게 클릭해'],0.4333132654428482
+5,PRESS,['대화 길게 탭해'],0.5617973655462265
+6,OPEN,"['chat', 'facebook_messenger']",0.43160951137542725
+7,DOUBLE_PRESS,['bluetooth'],1.0827222093939781
+8,OPEN,"['bluetooth speaker', 'bluetooth']",1.3620959147810936
+9,DOUBLE_PRESS,['bluetooth speaker'],1.8460941091179848
+10,PRESS,['bluetooth'],1.066753551363945
+11,PRESS,['PLAYBluetooth'],1.8549854159355164
+12,PRESS,['bluetooth'],3.149220071732998
+13,OPEN,"['app:apn', 'component:mobile_network']",0.4339866265654564
+14,OPEN,"['app:apn', 'component:double_tab']",0.44269268214702606
+15,OPEN,"['app:whatsapp', 'component:incognito']",0.4484608322381973
+16,LONG_PRESS,[' 길게 클릭해'],1.5260999500751495
+17,ERROR,[],3.615475170314312
+18,LONG_PRESS,['APN'],0.8220169693231583
+19,DOUBLE_PRESS,['your_profile'],0.9110785573720932
+20,PRESS,['Your Profile'],1.5615359768271446
+21,OPEN,"['your_profile', 'mobile_network']",0.43053989857435226
+22,PRESS,['너의 프로필 길게 클릭해'],1.1596892327070236
+23,LONG_PRESS,[' longer_profile_tap'],0.8542504608631134
+24,LONG_PRESS,['longer'],0.964117981493473
+25,DOUBLE_PRESS,['facebook_messenger'],1.9926708117127419
+26,OPEN,"['app:share', 'app:share']",1.9540746286511421
+27,OPEN,"['app:share', 'app:app']",1.1071103364229202
+28,OPEN,['app:share'],1.771885223686695
+29,OPEN,['facebook_messenger'],1.4486721828579903
+30,OPEN,['앱 공유 길게 눌러'],1.1308203861117363
+31,DOUBLE_PRESS,['print'],0.8704275339841843
+32,OPEN,['component:printing'],0.8764872774481773
+33,PRESS,"['print', 'twice']",1.1280891001224518
+34,PRESS,['인쇄 길게 클릭해'],1.105012685060501
+35,PRESS,['tab'],1.2719061970710754
+36,LONG_PRESS,['zoom out long press'],1.1563559994101524
+37,PRESS,['취소'],0.5502577349543571
+38,OPEN,"['component:mobile_network', 'app:settings']",0.7651984468102455
+39,OPEN,"['component:mobile_network', 'app:settings']",1.291197307407856
+40,LONG_PRESS,['취소 길게 클릭해'],1.2292451485991478
+41,CANCEL,[],1.303158938884735
+42,LONG_PRESS,['취소 길게 눌러'],1.226563721895218
+43,DOUBLE_PRESS,['헤드셋 연결'],1.5617028176784515
+44,DOUBLE_PRESS,['헤드셋 연결 두 번 탭해'],1.309519313275814
+45,DOUBLE_PRESS,"['component:home', 'app:settings']",1.6487911939620972
+46,LONG_PRESS,['길게'],1.5227527096867561
+47,LONG_PRESS,['headset'],2.33283294737339
+48,PRESS DOUBLE_PRESS LONG_PRESS ENTER,['ENTER'],1.7246662303805351
+49,LONG_PRESS,['광고 차단'],1.9381000250577927
+50,PRESS,['광고 차단'],1.7521554753184319
+51,DOUBLE_PRESS,['downs'],2.154980480670929
+52,OPEN,"['app:ad_blocking', 'app:block_ad']",2.109284318983555
+53,OPEN,"['app:광고', 'component:차단 길게']",1.3761837109923363
+54,OPEN,"['app:google_maps', 'component:incognito']",1.654131680727005
+55,PRESS,['가시성 두 번 클릭해'],0.6219895035028458
+56,OPEN,"['app:facebook_messenger', 'component:communications']",0.5062960311770439
+57,OPEN,"['app:whatsapp', 'component:incognito']",0.410417802631855
+58,PRESS,['가시성 길게 클릭해'],0.5481575280427933
+59,PRESS,['가시성 길게 탭해'],0.578981339931488
+60,OPEN,"['component:incognito', 'app:whatsapp']",0.7690320834517479
+61,HOME,[],0.41809317469596863
+62,OPEN,"['app:home', 'component:main_screen']",0.46037707477808
+63,OPEN,"['app:home', 'app:menu']",0.4459408298134804
+64,OPEN,"['app:back', 'app:home']",0.4393783435225487
+65,PRESS,['뒤로 가'],0.5132282674312592
+66,OPEN,"['app:settings', 'component:incognito']",0.4659329429268837
+67,OPEN,"['app:facebook_messenger', 'app:instagram']",0.4438323378562927
+68,OPEN,"['overview_button', 'com.google.android.apps.settings']",0.49669384956359863
+69,OPEN,"['app:tasker', 'component:task']",0.5027476623654366
+70,HOME,[],0.418927937746048
+71,OPEN,"['app:home', 'component:main_screen']",0.46048368513584137
+72,OPEN,"['app:home', 'app:menu']",0.4471641927957535
+73,OPEN,"['app:back', 'app:home']",0.4388672336935997
+74,PRESS,['뒤로 가'],0.5087558850646019
+75,OPEN,"['app:settings', 'component:incognito']",0.46313656866550446
+76,OPEN,"['app:facebook_messenger', 'app:instagram']",0.44197968393564224
+77,OPEN,"['overview_button', 'com.google.android.apps.settings']",0.48906559497117996
+78,OPEN,"['app:tasker', 'component:task']",0.495943121612072
+79,NONE,[],0.5941143557429314
+80,DOUBLE_PRESS,['1'],1.0507270246744156
+81,OPEN,"['component:mobile_network', 'app:settings']",0.5545052960515022
+82,OPEN,"['app:whatsapp', 'component:incognito']",0.46102187782526016
+83,OPEN,"['app:whatsapp', 'component:incognito']",0.4684348925948143
+84,NONE,['NONE'],1.6758818253874779
+85,NONE,[],0.5833128392696381
+86,PRESS,['잠시만'],0.36893565207719803
+87,NONE,['NONE'],0.5096173882484436

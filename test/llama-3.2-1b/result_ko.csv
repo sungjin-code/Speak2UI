@@ -1,0 +1,102 @@
+﻿ID,intent,value,time
+1,PRESS,['play store'],2.023731157183647
+2,OPEN,['계정 탭해'],1.100499913096428
+3,OPEN,"['app:whatsapp', 'component:incognito']",0.365865096449852
+4,OPEN,"['component:mobile_network', 'app:settings']",0.551046758890152
+5,DOUBLE_PRESS,['send'],1.1285736188292503
+6,DOUBLE_PRESS,['미니 키보드'],1.7513462826609612
+7,PRESS,['이모지 탭해'],0.4385431185364723
+8,PRESS,['icon_send_icon'],0.44084789603948593
+9,OPEN,"['app:office_lens', 'component:mobile_network']",0.3910975903272629
+10,PRESS,['위로 밀어'],0.31295984238386154
+11,OPEN,"['app:facebook_messenger', 'app: messenger']",1.2029984816908836
+12,OPEN,"['component:chat', 'app:chat_app']",1.0883834511041641
+13,OPEN,"['component:incognito', 'app:facebook_messenger']",0.39576146751642227
+14,OPEN,"['app:facebook_messenger', 'app:play_store']",0.5076534450054169
+15,PRESS,['계정 아이콘을 탭해'],0.33083584904670715
+16,OPEN,"['wallet', 'com.android.apps.facebook.messenger']",0.947844535112381
+17,OPEN,"['component:mobile_network', 'app:settings']",0.3641728237271309
+18,OPEN,"['component:personal_info', 'app:settings']",0.48368099331855774
+19,OPEN,"['component:incognito', 'app:settings']",2.1979559510946274
+20,OPEN,"['opera', 'app']",0.5360194146633148
+21,PRESS,['Opera logo'],1.4876424074172974
+22,PRESS,['settings'],0.7656969651579857
+23,PRESS,['아래로 스크롤해'],0.3568832352757454
+24,OPEN,"['settings', 'app:settings']",1.2047530859708786
+25,OPEN,"['component:tasker', 'app:tasker']",0.4218633472919464
+26,PRESS,['profiles'],0.3514242246747017
+27,PRESS,['plus_symbol'],0.3049893081188202
+28,OPEN,"['app:call', 'component:phone']",0.8621819540858269
+29,ENTER,['문자 작성'],0.9693309366703033
+30,OPEN,"['text_to_type', 'text_to_type']",0.5509404987096786
+31,OPEN,"['app:settings', 'component:mobile_network']",0.37945448607206345
+32,OPEN,"['battery', 'tab']",0.9562098234891891
+33,OPEN,"['adaptive_battery', 'app:adaptive_battery']",0.48161713778972626
+34,OPEN,"['app:facebook_messenger', 'component:mobile_network']",0.41108057647943497
+35,PRESS,['가로 점 세 개 아이콘을 탭해'],0.3853331059217453
+36,PRESS,['위로 밀어'],0.32062871754169464
+37,OPEN,"['component:calendar', 'app:calendar']",0.9939587637782097
+38,PRESS,['plus_sign'],0.3132355064153671
+39,OPEN,"['component:calendar', 'app:settings']",0.4372250884771347
+40,OPEN,"['component:save', 'app:settings']",1.2063991650938988
+41,PRESS,['dolphins_icon'],0.3137865737080574
+42,OPEN,"['data', 'clear_data']",0.5057884603738785
+43,OPEN,"['app:history', 'app:settings']",1.3946739882230759
+44,PRESS,['DELETE'],1.3930217996239662
+45,OPEN,"['digital_well_being', 'app:digital_well_being']",0.42661552876234055
+46,OPEN,"['component:tasker', 'app:tasker']",0.41904398053884506
+47,OPEN,"['app:play_store', 'component:store']",0.3934955671429634
+48,OPEN,['app:game'],1.464659683406353
+49,OPEN,"['component:settings', 'app:settings']",0.6894731819629669
+50,PRESS,['삭제 버튼을 탭해'],0.5289430245757103
+51,OPEN,"['component:gallery', 'app:gallery']",1.140918418765068
+52,OPEN,"['app:gallery', 'photos']",0.3836190477013588
+53,NONE,[],0.5833018645644188
+54,OPEN,"['app:google_play_store', 'app:music_app']",0.3400275409221649
+55,OPEN,"['menu', 'button', 'tab']",1.2281638383865356
+56,PRESS,['팟캐스트 탭해'],2.1790673583745956
+57,OPEN,"['your_podcast', 'app:podcast']",0.5713104233145714
+58,OPEN,"['component:incognito', 'app:google_maps']",0.5145440176129341
+59,PRESS,['위로 밀어'],0.3124522492289543
+60,PRESS,['네트워크 탭해'],0.43445204943418503
+61,PRESS,['search_now'],0.31630050390958786
+62,PRESS,['아래로 밀어'],0.4765447676181793
+63,OPEN,['app:google_maps'],0.287332683801651
+64,OPEN,"['account_circle', 'account']",0.3756752237677574
+65,OPEN,['app:settings'],0.9875073432922363
+66,OPEN,"['navigation_settings', 'app:settings']",0.4402604103088379
+67,NONE,[],1.3041294068098068
+68,PRESS,['소리 키우기 선택해'],0.326699897646904
+69,NONE,['NONE'],0.8336952030658722
+70,OPEN,['component:settings'],0.9735980033874512
+71,OPEN,"['mobile_network', 'tab']",0.5014780685305595
+72,OPEN,"['data_roaming', 'mobile_data']",0.6375893503427505
+73,OPEN,"['mobile_network', 'button']",0.7995335981249809
+74,OPEN,"['more_icon', 'tabbed']",2.606471210718155
+75,OPEN,"['component:network', 'app:settings']",0.8986197784543037
+76,PRESS,['세로 점 세 개 메뉴 아이콘을 탭해'],0.45630349963903427
+77,ENTER,['PIN'],0.9254684373736382
+78,ENTER,['설정 탭해'],1.9859917163848877
+79,OPEN,"['app:setting', 'mobile_network']",1.585391327738762
+80,OPEN,"['app:google_maps', 'maps']",2.1629578471183777
+81,PRESS,['아래쪽으로 밀어'],0.5177722871303558
+82,OPEN,"['chrome', 'mobile_network']",0.342167429625988
+83,OPEN,"['component:incognito', 'app:google_maps']",1.150025725364685
+84,ENTER,['설정 탭해'],1.4534835442900658
+85,DOUBLE_PRESS,['tab'],2.596986599266529
+86,OPEN,"['component:search_history', 'app:google_maps']",0.3842458426952362
+87,OPEN,"['component:mobile_network', 'app:settings']",0.5381497219204903
+88,PRESS,['빈 곳을 위로 밀어'],0.5015809759497643
+89,OPEN,"['app:mobile_network', 'component:setting']",0.4145271107554436
+90,OPEN,"['component:mobile_network', 'app:settings']",0.46079424768686295
+91,PRESS,['bluetooth'],0.48971300572156906
+92,OPEN,"['component:settings', 'app:settings']",1.1445823833346367
+93,OPEN,"['app:twitter', 'component:app']",0.34692995995283127
+94,OPEN,"['component:more', 'app:facebook_messenger']",0.449298694729805
+95,OPEN,"['app:calendar', 'app:settings']",1.2633525133132935
+96,OPEN,"['app:linkedin', 'app:mobile_network']",0.431316502392292
+97,OPEN,"['app:login_and_security', 'app:settings']",0.4720500260591507
+98,OPEN,"['component:two_factor_authentication', 'app:google_authenticator']",0.5082396119832993
+99,OPEN,"['component:instagram', 'app:instagram']",0.4067758470773697
+100,PRESS,['tap'],1.04519934207201
+101,OPEN,"['component:security', 'app:settings']",1.2078855484724045

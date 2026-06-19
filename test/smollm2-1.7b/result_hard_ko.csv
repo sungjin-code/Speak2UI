@@ -1,0 +1,88 @@
+﻿ID,intent,value,time
+1,PRESS,['chat'],0.1964658796787262
+2,OPEN,"['component:incognito', 'app:tasker']",0.3002578616142273
+3,PRESS,['chat'],0.1966836154460907
+4,PRESS,['chat'],0.19737333804368973
+5,OPEN,"['component:incognito', 'app:gmail']",0.2971339076757431
+6,PRESS,['chat'],0.19940821081399918
+7,OPEN,"['component:mobile_network', 'app:google_maps']",0.3019031882286072
+8,OPEN,"['component:mobile_network', 'app:google_maps']",0.30332405120134354
+9,OPEN,"['component:mobile_network', 'app:google_maps']",0.30737245827913284
+10,OPEN,"['component:mobile_network', 'app:google_maps']",0.3060959056019783
+11,OPEN,"['component:mobile_network', 'app:google_maps']",0.30830809473991394
+12,OPEN,"['component:mobile_network', 'app:google_maps']",0.30459854006767273
+13,OPEN,"['component:mobile_network', 'app:settings']",0.2892272472381592
+14,OPEN,"['component:mobile_network', 'app:settings']",0.2893809974193573
+15,OPEN,"['component:mobile_network', 'app:settings']",0.28810111433267593
+16,OPEN,"['component:mobile_network', 'app:settings']",0.2912699282169342
+17,OPEN,"['component:mobile_network', 'app:settings']",0.2909843921661377
+18,OPEN,"['component:mobile_network', 'app:settings']",0.29257289320230484
+19,OPEN,"['your_profile', 'your_profile']",0.27103830873966217
+20,OPEN,"['your_profile', 'your_profile']",0.27394239604473114
+21,OPEN,"['your_profile', 'your_profile']",0.27072395384311676
+22,OPEN,"['your_profile', 'your_profile']",0.27282579243183136
+23,OPEN,"['your_profile', 'your_profile']",0.27198222279548645
+24,OPEN,"['your_profile', 'your_profile']",0.2721199467778206
+25,OPEN,"['component:mobile_network', 'app:google_maps']",0.31016334891319275
+26,OPEN,"['component:mobile_network', 'app:google_maps']",0.3090236112475395
+27,OPEN,"['component:mobile_network', 'app:google_maps']",0.30851640552282333
+28,OPEN,"['component:mobile_network', 'app:google_maps']",0.30693602561950684
+29,OPEN,"['component:mobile_network', 'app:google_maps']",0.30829812586307526
+30,OPEN,"['component:mobile_network', 'app:google_maps']",0.3056335598230362
+31,OPEN,"['component:incognito', 'app:email']",0.2883335277438164
+32,OPEN,"['component:incognito', 'app:email']",0.288487508893013
+33,OPEN,"['component:mobile_network', 'app:settings']",0.29086145758628845
+34,PRESS,['bluetooth'],0.2084263488650322
+35,OPEN,"['component:incognito', 'app:email']",0.28703055530786514
+36,OPEN,"['component:mobile_network', 'app:settings']",0.29220467805862427
+37,NONE,['취소 두 번 클릭해'],0.3800286501646042
+38,NONE,['취소 두 번 탭해'],0.3468583971261978
+39,NONE,['취소 두 번 눌러'],0.36179783940315247
+40,NONE,['취소 길게 클릭해'],0.3807382360100746
+41,NONE,['취소 길게 탭해'],0.344243623316288
+42,NONE,['NONE'],0.21606431156396866
+43,OPEN,"['component:headset', 'app:headset_plugged_any']",0.3382187634706497
+44,OPEN,"['component:headset', 'app:settings']",0.28053414821624756
+45,OPEN,"['component:headset', 'app:headset_plugged_any']",0.3388090059161186
+46,PRESS,['headset_plugged_any'],0.2533939927816391
+47,OPEN,"['component:headset', 'app:headset_plugged_any']",0.33730947226285934
+48,OPEN,"['component:headset', 'app:headset_plugged_any']",0.33714500069618225
+49,NONE,['광고 차단 두 번 클릭해'],0.42999155819416046
+50,NONE,['광고 차단 두 번 탭해'],0.4024118334054947
+51,NONE,['광고 차단 두 번 눌러'],0.40928463637828827
+52,NONE,['광고 차단 길게 클릭해'],0.4286787435412407
+53,NONE,['광고 차단 길게 탭해'],0.39993853121995926
+54,NONE,['광고 차단 길게 눌러'],0.4100399985909462
+55,PRESS,['account_preferences'],0.2776440903544426
+56,NONE,['가시성 두 번 탭해'],0.5145844146609306
+57,NONE,['가시성 두 번 눌러'],0.567264012992382
+58,PRESS,['account_preferences'],0.3221660926938057
+59,NONE,['가시성 길게 탭해'],0.5462210848927498
+60,NONE,['가시성 길게 눌러'],0.5624385923147202
+61,OPEN,"['component:home', 'app:settings']",0.3768969550728798
+62,OPEN,"['component:mobile_network', 'app:settings']",0.40429599583148956
+63,OPEN,"['component:mobile_network', 'app:settings']",0.4122783690690994
+64,NONE,[],0.24344322830438614
+65,NONE,[],0.20891012251377106
+66,OPEN,"['component:mobile_network', 'app:settings']",0.2803335189819336
+67,OPEN,"['component:incognito', 'app:settings']",0.280850812792778
+68,OPEN,"['component:mobile_network', 'app:settings']",0.2806304097175598
+69,OPEN,"['component:mobile_network', 'app:tasker']",0.2979682758450508
+70,OPEN,"['component:home', 'app:settings']",0.28196942061185837
+71,OPEN,"['component:mobile_network', 'app:settings']",0.2805078327655792
+72,OPEN,"['component:mobile_network', 'app:settings']",0.28799063712358475
+73,NONE,[],0.1876121386885643
+74,NONE,[],0.18042895942926407
+75,OPEN,"['component:mobile_network', 'app:settings']",0.2792326733469963
+76,OPEN,"['component:incognito', 'app:settings']",0.2795562744140625
+77,OPEN,"['component:mobile_network', 'app:settings']",0.27930693328380585
+78,OPEN,"['component:mobile_network', 'app:tasker']",0.2901827022433281
+79,OPEN,"['3', 'component:mobile_network']",0.2702206000685692
+80,OPEN,"['1', 'settings']",0.23617149144411087
+81,OPEN,"['component:mobile_network', 'app:settings']",0.28902295231819153
+82,ENTER,['여보세요'],0.2907755896449089
+83,NONE,['이게 뭐야?'],0.2806323617696762
+84,NONE,['NONE'],0.20691556483507156
+85,NONE,['NONE'],0.20796073228120804
+86,NONE,['NONE'],0.20769254118204117
+87,NONE,['NONE'],0.20780713856220245
