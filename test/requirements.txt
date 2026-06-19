@@ -1,0 +1,9 @@
+openai
+torch
+transformers
+accelerate
+numpy
+pandas
+tqdm
+scikit-learn
+python-dotenv

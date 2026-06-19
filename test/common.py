@@ -1,20 +1,14 @@
+import sys
 import time
 import json
 import ast
-import sys
 
-import openai
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.preprocessing import MultiLabelBinarizer
 
-
-# OpenAI API Key
-API_KEY = "sk-proj-..."
-
-client = openai.OpenAI(api_key=API_KEY)
 
 system_prompt = """You are an intelligent assistant designed to understand user input and convert it into a structured command. \
 Your task is to determine the most appropriate **intent** the user wants to take on a user interface."""
@@ -31,7 +25,7 @@ def get_prompt(user_input: str, clickables: str, apps: str) -> str:
 
 ### UI Interaction Actions:
 - **PRESS**: Select/tap a clickable UI element (must be from clickable elements list)
-- **DOUBLE_PRESS**: Double-tap a clickable UI element (must be from clickable elements list)  
+- **DOUBLE_PRESS**: Double-tap a clickable UI element (must be from clickable elements list)
 - **LONG_PRESS**: Long-press/hold a clickable UI element (must be from clickable elements list)
 
 ### Input Action:
@@ -44,7 +38,7 @@ def get_prompt(user_input: str, clickables: str, apps: str) -> str:
 - **OVERVIEW_BUTTON**: Press Android current task/overview button
 
 ### App Launch:
-- **OPEN**: Launch an app, open a URL, or open a specific component/page inside an app  
+- **OPEN**: Launch an app, open a URL, or open a specific component/page inside an app
   - `value` can be:
     - A single string → opening the app or URL directly
     - A list of exactly two strings → opening a specific page/component inside an app (first: component identifier, second: app identifier)
@@ -56,7 +50,7 @@ def get_prompt(user_input: str, clickables: str, apps: str) -> str:
 - **PRESS/DOUBLE_PRESS/LONG_PRESS**: `value` must exactly match one item from clickable elements list. Do not create new names; if no exact match exists, return NONE.
 - **OPEN**:
   - If launching an app/URL → `value` is a single string from available apps list
-  - If opening a specific page/component → `value` is a list of exactly two strings in the correct order: 
+  - If opening a specific page/component → `value` is a list of exactly two strings in the correct order:
     1. Component identifier (e.g., "component:mobile_network")
     2. App identifier (e.g., "app:settings")
 - **SWIPE**: `value` must be exactly one of: UP, DOWN, LEFT, RIGHT
@@ -94,35 +88,13 @@ Return ONLY a JSON object with this exact structure:
     return prompt
 
 
-def parse_command(
-    user_input: str,
-    clickables: str,
-    apps: str,
-    model_name: str,
-) -> dict:
-    prompt_text = get_prompt(user_input, clickables, apps)
+def run_inference(file_path, save_path, parse_fn, encoding="utf-8", pause=0):
+    """Run inference over a test set using a model-specific `parse_fn`.
 
-    temperature = 0
-    if model_name.startswith("gpt-5"):
-        temperature = 1
-
-    try:
-        response = client.chat.completions.create(
-            model=model_name,
-            response_format={"type": "json_object"},
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt_text},
-            ],
-            temperature=temperature,
-        )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        return json.dumps({"error": str(e)}, indent=2)
-
-
-def run_inference(file_path, save_path, model_name, encoding="utf-8", pause=3):
-    print(f"Running {model_name} on {file_path}...")
+    `parse_fn(user_input, clickables, apps) -> dict` performs a single
+    prediction and returns a dict with "intent" and "value" keys.
+    """
+    print(f"Running inference on {file_path}...")
 
     test_result = {"ID": [], "intent": [], "value": [], "time": []}
 
@@ -140,7 +112,7 @@ def run_inference(file_path, save_path, model_name, encoding="utf-8", pause=3):
 
         try:
             start_time = time.perf_counter()
-            response = parse_command(user_input, clickables, installed_apps, model_name)
+            response = parse_fn(user_input, clickables, installed_apps)
             execution_time = time.perf_counter() - start_time
 
             intent = str(response.get("intent", "ERROR")).strip().upper()
@@ -158,7 +130,8 @@ def run_inference(file_path, save_path, model_name, encoding="utf-8", pause=3):
             test_result["value"].append(value)
             test_result["time"].append(execution_time)
 
-            time.sleep(pause)
+            if pause:
+                time.sleep(pause)
 
         except Exception as e:
             tqdm.write(f"[{idx}] Error: {e}")
@@ -218,41 +191,3 @@ def evaluate(file_path, result_path, save_path, encoding="utf-8"):
             },
             json_file,
         )
-
-
-if __name__ == "__main__":
-    #############################
-    ###### Test Parameters ######
-    lang = "en"
-    model = "gpt-5-mini"
-    is_hard = True
-    ##############################
-
-    encoding = "utf-8"
-    if lang.lower() == "ko":
-        encoding = "utf-8-sig"
-
-    suffix = ""
-    if is_hard:
-        suffix = "_hard"
-
-    model_names = {
-        "gpt-4o-mini": "gpt-4o-mini-2024-07-18",
-        "gpt-5-mini": "gpt-5-mini-2025-08-07",
-    }
-    if model not in model_names.keys():
-        raise NameError(f"Only allow models: {model_names.keys()}")
-
-    run_inference(
-        file_path=f"eval{suffix}/test_{lang}.csv",
-        save_path=f"{model}/result{suffix}_{lang}.csv",
-        encoding=encoding,
-        model_name=model_names[model],
-    )
-    evaluate(
-        file_path=f"eval{suffix}/test_{lang}.csv",
-        result_path=f"{model}/result{suffix}_{lang}.csv",
-        save_path=f"{model}/result{suffix}_{lang}.json",
-        encoding=encoding,
-    )
-    print("✅ Done!")
