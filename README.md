@@ -1,10 +1,10 @@
-# Speak2UI: Voice-Driven Assistive Interfaces for Precision Mobile Accessibility
+# Speak2UI: Voice-Driven Low-Level Mobile Interaction Using Context-Aware LLM Command Parsing
 
-This study proposes "Speak2UI", a novel voice-based mobile UI control system that leverages pre-trained large language models to minimize data dependency and enable direct voice control of low-level UI elements. The system comprises Voice Activity Detection-based speech recognition, GPT-4o-mini command parsing supporting ten action types with context-aware filtering, and UI control modules. Performance evaluation compared command recognition accuracy with the existing system.
+This study proposes Speak2UI, a voice-based mobile UI control system that leverages pre-trained large language models to reduce data dependency and enable direct voice control of low-level UI elements. The system comprises speech recognition with GPT-4o-mini-based command parsing supporting ten action types with context-aware filtering, and UI control modules.
 
 ## 🔎 Demo
 
-<video src="https://private-user-images.githubusercontent.com/75429815/529877528-e2450ec9-2145-4c65-860d-99f40e621ca9.mp4?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzU4MDUyNTQsIm5iZiI6MTc3NTgwNDk1NCwicGF0aCI6Ii83NTQyOTgxNS81Mjk4Nzc1MjgtZTI0NTBlYzktMjE0NS00YzY1LTg2MGQtOTlmNDBlNjIxY2E5Lm1wND9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjA0MTAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwNDEwVDA3MDkxNFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTg3OWM4NjBjYzFkNzMxOTM4Zjc2OWY2YzYzNGI4NTA5YjFlZjExMDc5MDE3NWUwNGQ0YTJlY2ExNjRhNDY1YWYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.QNQADJyCknkNi6xxK3PiovGi7Da0x2Z13btHTurnn1g"></video>
+![android demo](/assets/demo.png)
 
 Test Environment: Samsung S8+ (Android API level 34)
 
@@ -55,14 +55,14 @@ This section outlines the environment settings required to build the project suc
 ## 📝 Citataion
 
 ```bib
-@article{ART003300241,
-  author  = {Sung-Jin Park and Jin-A Park and Ha-Young Oh},
-  title   = {Speak2UI: Voice Assistance Technology for Mobile Accessibility},
-  journal = {Journal of the Korea Institute of Information and Communication Engineering},
-  year    = {2026},
-  volume  = {30},
-  number  = {1},
-  pages   = {46--53},
-  issn    = {2234-4772}
+@article{Park23102026,
+    author = {Sungjin Park and Jin A. Park and Jooyoung Lim and Hayoung Oh},
+    title = {Speak2UI: Voice-Driven Low-Level Mobile Interaction Using Context-Aware LLM Command Parsing},
+    journal = {International Journal of Human--Computer Interaction},
+    pages = {1--14},
+    year = {2026},
+    publisher = {Taylor \& Francis},
+    doi = {10.1080/10447318.2026.2745091},
+    url = {https://doi.org/10.1080/10447318.2026.2745091}
 }
 ```
